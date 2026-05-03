@@ -1,0 +1,66 @@
+#include <stdlib.h>
+
+typedef struct {
+    int val;
+    int index;
+} Pair;
+
+void merge(Pair* arr, int left, int mid, int right, int* counts) {
+    int n = right - left + 1;
+    Pair* temp = (Pair*)malloc(n * sizeof(Pair));
+
+    int i = left, j = mid + 1, k = 0;
+    int rightCount = 0;
+
+    while (i <= mid && j <= right) {
+        if (arr[j].val < arr[i].val) {
+            temp[k++] = arr[j++];
+            rightCount++;  // one smaller element on right
+        } else {
+            counts[arr[i].index] += rightCount;
+            temp[k++] = arr[i++];
+        }
+    }
+
+    while (i <= mid) {
+        counts[arr[i].index] += rightCount;
+        temp[k++] = arr[i++];
+    }
+
+    while (j <= right) {
+        temp[k++] = arr[j++];
+    }
+
+    for (int i = 0; i < n; i++) {
+        arr[left + i] = temp[i];
+    }
+
+    free(temp);
+}
+
+void mergeSort(Pair* arr, int left, int right, int* counts) {
+    if (left >= right) return;
+
+    int mid = left + (right - left) / 2;
+
+    mergeSort(arr, left, mid, counts);
+    mergeSort(arr, mid + 1, right, counts);
+    merge(arr, left, mid, right, counts);
+}
+
+int* countSmaller(int* nums, int numsSize, int* returnSize) {
+    *returnSize = numsSize;
+
+    int* counts = (int*)calloc(numsSize, sizeof(int));
+    Pair* arr = (Pair*)malloc(numsSize * sizeof(Pair));
+
+    for (int i = 0; i < numsSize; i++) {
+        arr[i].val = nums[i];
+        arr[i].index = i;
+    }
+
+    mergeSort(arr, 0, numsSize - 1, counts);
+
+    free(arr);
+    return counts;
+}

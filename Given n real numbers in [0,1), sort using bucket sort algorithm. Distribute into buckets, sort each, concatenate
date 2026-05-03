@@ -1,0 +1,84 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Node for linked list (bucket)
+typedef struct Node {
+    float value;
+    struct Node* next;
+} Node;
+
+// Insert in sorted order (keeps bucket sorted)
+void insertSorted(Node** head, float val) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->value = val;
+    newNode->next = NULL;
+
+    if (*head == NULL || (*head)->value > val) {
+        newNode->next = *head;
+        *head = newNode;
+        return;
+    }
+
+    Node* curr = *head;
+    while (curr->next && curr->next->value <= val) {
+        curr = curr->next;
+    }
+
+    newNode->next = curr->next;
+    curr->next = newNode;
+}
+
+// Bucket Sort
+void bucketSort(float arr[], int n) {
+    if (n <= 0) return;
+
+    // Create buckets
+    Node** buckets = (Node**)calloc(n, sizeof(Node*));
+
+    // Step 1: Distribute into buckets
+    for (int i = 0; i < n; i++) {
+        int index = (int)(arr[i] * n);  // map to bucket
+        insertSorted(&buckets[index], arr[i]);
+    }
+
+    // Step 2: Concatenate buckets
+    int k = 0;
+    for (int i = 0; i < n; i++) {
+        Node* curr = buckets[i];
+        while (curr) {
+            arr[k++] = curr->value;
+            Node* temp = curr;
+            curr = curr->next;
+            free(temp);
+        }
+    }
+
+    free(buckets);
+}
+
+// Print array
+void printArray(float arr[], int n) {
+    for (int i = 0; i < n; i++)
+        printf("%.2f ", arr[i]);
+    printf("\n");
+}
+
+int main() {
+    int n;
+
+    printf("Enter number of elements: ");
+    scanf("%d", &n);
+
+    float arr[n];
+
+    printf("Enter elements in range [0,1):\n");
+    for (int i = 0; i < n; i++)
+        scanf("%f", &arr[i]);
+
+    bucketSort(arr, n);
+
+    printf("Sorted array:\n");
+    printArray(arr, n);
+
+    return 0;
+}
